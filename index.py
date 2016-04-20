@@ -8,7 +8,11 @@
 """
 
 
+from script import v1
+
+
 def test():
+    v1.init()
     print("ok")
 
 
