@@ -30,5 +30,7 @@ def minify_file(data, minify_type):
         return handle_html(data)
     elif minify_type == 'css':
         return handle_css(data)
-    else:
+    elif minify_type == 'js':
         return handle_javascript(data)
+    else:
+        return data
