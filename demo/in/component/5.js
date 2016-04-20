@@ -10,3 +10,5 @@ document.getElementById('ccc').onclick=cli;
 
 
 function cli(){alert(123);}
+
+this.component_init = component_init

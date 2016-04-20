@@ -1,0 +1,8 @@
+# 合并文件规则
+
+rule: merge
+source_path: ./demo/in/m
+target_path: ./demo/out/m/main.js
+
+# 压缩方式（html, css， js）
+minify: js

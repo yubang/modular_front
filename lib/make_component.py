@@ -10,7 +10,7 @@
 
 from lib.merge_file import get_after_merge_file_str
 from lib.all_to_js import build_js_data
-from lib.static_minify import js_minify
+from lib.static_minify import js_minify, handle_javascript
 import yaml
 
 
@@ -22,7 +22,7 @@ def get_component_js_str(dir_path):
     """
     html = get_after_merge_file_str(dir_path, file_type=r'\.html$', minify_type='html')
     css = get_after_merge_file_str(dir_path, file_type=r'\.css$', minify_type='css')
-    js = get_after_merge_file_str(dir_path, file_type=r'\.js$', minify_type='js')
+    js = get_after_merge_file_str(dir_path, file_type=r'\.js$')
 
     html_js_str, html_js_name = build_js_data(html, 'tools_html')
     css_js_str, css_js_name = build_js_data("<style>"+css+"</style>", 'tools_css')
@@ -38,14 +38,14 @@ def get_component_js_str(dir_path):
             %s
             %s
             this.build_component = function(dom_id){
-              document.getElementById(dom_id).innerHTML = tools_html + '\n' + tools_css;
+              document.getElementById(dom_id).innerHTML = tools_css + ' ' + tools_html;
               component_init();
             };
 
             return this;
         };
-        var component_%s = component_%s_func();
-    """ % (component_config['name'], html_js_str, css_js_str, js, component_config['name'], component_config['name'])
+        this.component_%s = component_%s_func();
+    """ % (component_config['name'], css_js_str, html_js_str, js, component_config['name'], component_config['name'])
     about_str = '// 该组件由modular_front打包生成，具体请查看：https://github.com/yubang/modular_front\n'
 
-    return about_str + js_minify(component_js)
+    return about_str + handle_javascript(component_js)
