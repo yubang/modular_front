@@ -10,6 +10,7 @@
 
 from lib.merge_file import get_after_merge_file_str
 from lib.all_to_js import build_js_data
+from lib.static_minify import js_minify
 import yaml
 
 
@@ -24,7 +25,7 @@ def get_component_js_str(dir_path):
     js = get_after_merge_file_str(dir_path, file_type=r'\.js$', minify_type='js')
 
     html_js_str, html_js_name = build_js_data(html, 'tools_html')
-    css_js_str, css_js_name = build_js_data(css, 'tools_css')
+    css_js_str, css_js_name = build_js_data("<style>"+css+"</style>", 'tools_css')
 
     # 读取组件配置
     with open(dir_path+'/c.yaml', 'r') as fp:
@@ -32,18 +33,19 @@ def get_component_js_str(dir_path):
         component_config = yaml.load(fp_data)
 
     component_js = """
-        // 该组件由modular_front打包生成，具体请查看：https://github.com/yubang/modular_front
-        var component_%s = function(){
+        var component_%s_func = function(){
             %s
             %s
             %s
             this.build_component = function(dom_id){
               document.getElementById(dom_id).innerHTML = tools_html + '\n' + tools_css;
               component_init();
-            }
+            };
 
             return this;
-        }
-    """ % (component_config['name'], html_js_str, css_js_str, js)
+        };
+        var component_%s = component_%s_func();
+    """ % (component_config['name'], html_js_str, css_js_str, js, component_config['name'], component_config['name'])
+    about_str = '// 该组件由modular_front打包生成，具体请查看：https://github.com/yubang/modular_front\n'
 
-    return component_js
+    return about_str + js_minify(component_js)

@@ -34,9 +34,16 @@ from copy import copy
 from hashlib import sha1
 from shutil import make_archive, rmtree
 from tempfile import gettempdir
-from css_html_js_minify import __version__, __url__, __source__
 from css_html_js_minify.variables import *
 from functools import partial
+
+__version__ = '1.9.1'
+__license__ = 'GPLv3+ LGPLv3+'
+__author__ = 'Juan Carlos'
+__email__ = 'juancarlospaco@gmail.com'
+__url__ = 'https://github.com/juancarlospaco/css-html-js-minify'
+__source__ = ('https://raw.githubusercontent.com/juancarlospaco/'
+              'css-html-js-minify/master/css-html-js-minify.py')
 
 try:
     from urllib import request

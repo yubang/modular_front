@@ -25,4 +25,4 @@ def build_js_data(source_str, str_name=None):
 
     after_handle_data = source_str.strip()
     after_handle_data = after_handle_data.replace('"', '\\"')
-    return 'var ' + str_name + '="' + after_handle_data + '"', str_name
+    return 'var ' + str_name + '="' + after_handle_data + '";', str_name

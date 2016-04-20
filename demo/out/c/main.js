@@ -1,0 +1,2 @@
+// 该组件由modular_front打包生成，具体请查看：https://github.com/yubang/modular_front
+var component_beta_func=function(){var tools_html="<div> <a id=ccc  >测试</a> </div>";var tools_css="<style>@charset utf-8; a{color:green}</style>";function component_init(){document.getElementById('ccc').onclick=cli;document.getElementById('ccc').innerHTML='vvv11111';}function cli(){alert(123);}this.build_component=function(dom_id){document.getElementById(dom_id).innerHTML=tools_html+''+tools_css;component_init();};return this;};var component_beta=component_beta_func();
