@@ -10,7 +10,7 @@
 
 from lib.merge_file import get_after_merge_file_str
 from lib.all_to_js import build_js_data
-from lib.static_minify import js_minify, handle_javascript
+from lib.static_minify import handle_javascript
 import yaml
 
 
