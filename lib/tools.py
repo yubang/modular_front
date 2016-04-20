@@ -9,10 +9,10 @@
 import os
 
 
-def output_file(file_path, fp_data):
+def output_file(file_path, fp_data, write_type='w'):
     if not os.path.exists(os.path.dirname(file_path)):
         os.makedirs(os.path.dirname(file_path))
-    with open(file_path, 'w') as fp:
+    with open(file_path, write_type) as fp:
         fp.write(fp_data)
 
 
@@ -26,4 +26,4 @@ def get_file_type(file_path):
     if len(t) <= 1:
         return None
     else:
-        return t[-2:-1]
+        return t[-1:][0]

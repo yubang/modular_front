@@ -36,7 +36,7 @@ def handle_rule(data):
     elif data['rule'] == 'merge':
         merge_file(data)
     elif data['rule'] == 'minify':
-        merge_file(data)
+        minify_file_in_script(data)
 
 
 def make_component(data):
@@ -73,5 +73,17 @@ def minify_file_in_script(data, offset_path='.'):
         for fp in fps:
             minify_file_in_script(data, offset_path + '/' + fp)
     else:
-        text = minify_file(data, tools.get_file_type(now_path))
-        tools.output_file(data['target_path'] + '/' + offset_path, text)
+        fp_type = tools.get_file_type(now_path)
+        if fp_type and fp_type in ['html', 'css', 'js']:
+            read_type = 'r'
+        else:
+            read_type = 'rb'
+        print(fp_type)
+        with open(now_path, read_type) as fp:
+            fp_data = fp.read()
+            if fp_type and fp_type in ['html', 'css', 'js']:
+                fp_data = minify_file(fp_data, fp_type)
+                write_type = 'w'
+            else:
+                write_type = 'wb'
+            tools.output_file(data['target_path'] + '/' + offset_path, fp_data, write_type)
