@@ -19,6 +19,7 @@ import traceback
 import os
 import yaml
 import copy
+import time
 
 
 def init(argv):
@@ -71,12 +72,15 @@ def handle_rule(data, argv):
     if data['rule'] == 'make_component':
         log.info('触发制作组件，文件源：%s' % changle_file_path)
         make_component(data)
+        print('制作组件完成 ' + time.strftime('%H:%M:%S'))
     elif data['rule'] == 'merge':
         log.info('触发合并文件，文件源：%s' % changle_file_path)
         merge_file(data)
+        print('合并文件完成 ' + time.strftime('%H:%M:%S'))
     elif data['rule'] == 'minify':
         log.info('触发压缩文件，文件源：%s' % changle_file_path)
         minify_file_in_script(data)
+        print('压缩文件完成 ' + time.strftime('%H:%M:%S'))
 
 
 def make_component(data):
@@ -139,6 +143,11 @@ class MyHandle(FileSystemEventHandler):
         super(MyHandle, self).__init__()
 
     def handle_all(self, event):
+
+        # 忽略 .开头的隐藏文件
+        if os.path.basename(event.src_path)[0:1] == '.':
+            return
+        # 忽略文件夹
         if not event.is_directory:
             log.info('监控到文件变化：%s' % event.src_path)
             argv = copy.deepcopy(self.argv)
