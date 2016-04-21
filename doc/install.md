@@ -1,6 +1,7 @@
 # 小工具安装篇
 
 **环境准备**
+
 python3.4+（做工具的时候就没想过去适应python2，望见谅）
 pip（python的包管理工具）
 
@@ -9,6 +10,7 @@ pip（python的包管理工具）
 - wget https://github.com/yubang/modular_front/archive/master.zip
 
 **工具配置**
+
 当我们下载好小工具之后，请解压到一个目录（非常不建议路径带有中文，我没测试过中文路径的情况）
 
 然后进入工具文件夹，执行pip install -r requirements.txt 安装好必须的依赖

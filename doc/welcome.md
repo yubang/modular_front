@@ -22,7 +22,7 @@
 - 压缩混淆js文件
 - 简单html生成
 
-为什么前端需要模块化？
+**为什么前端需要模块化？**
 
 因为如果我们还是用以前那种后台mvc开发模式，后台生成html输出到浏览器。对前端小伙伴来说，还要学习后台的模板语言，还需要搭建后台开发环境，这简直是灾难。
 
@@ -34,7 +34,7 @@
 
 使用文档：
 - [安装工具](https://github.com/yubang/modular_front/blob/master/doc/install.md "安装工具")
-- 组件打包
+- [组件打包](https://github.com/yubang/modular_front/blob/master/doc/component.md "组件打包")
 - 合并静态资源
 - 压缩静态资源
 
