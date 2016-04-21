@@ -12,4 +12,4 @@
 
 
 ### 如何使用
-[文档](https://github.com/yubang/doc/welcome.md "文档")
+[文档](https://github.com/yubang/modular_front/blob/master/doc/welcome.md "文档")
