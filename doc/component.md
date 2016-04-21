@@ -17,7 +17,7 @@ beta改成自己组件的名字（随意但是有意义点，请用英文）
 ##### 第二步
 编写规则文件，规则文件需要放在工具的rule目录下的任意子文件夹内。内容如下：
     # 这是一个打包组件的规则文件
-
+    
     rule: make_component
     source_path: cc
     target_path: out/c.js
@@ -28,10 +28,10 @@ out/c.js是组件打包生成的js存放路径，也是相对路径。
 
 **其实这样子，工具就会自动打包了，但是编写组件要需要约束的地方**
 
-组件的js源文件的函数不能被直接调用，如果想被调用请写成this.方法名 = function(XXX，【xxx】){XXX}
+- 组件的js源文件的函数不能被直接调用，如果想被调用请写成this.方法名 = function(XXX，【xxx】){XXX}
 
-组件的js调用写了this之后也是不能直接调用了，因为防止组件之间代码冲突工具自动把函数包起来了，调用的时候需要用component_XXX.方法 这样子来调用。XXX是组件配置时候写的名字
+- 组件的js调用写了this之后也是不能直接调用了，因为防止组件之间代码冲突工具自动把函数包起来了，调用的时候需要用component_XXX.方法 这样子来调用。XXX是组件配置时候写的名字
 
-组件的js需要提供一个this.component_init = function(){}的方法，用于组件挂载到页面之后回调，初始化方法请写在这里。
+- 组件的js需要提供一个this.component_init = function(){}的方法，用于组件挂载到页面之后回调，初始化方法请写在这里。
 
-挂载组件的时候使用component_XXX.build_component('demo_1'); demo_1改成要挂载到的元素的id
+- 挂载组件的时候使用component_XXX.build_component('demo_1'); demo_1改成要挂载到的元素的id
