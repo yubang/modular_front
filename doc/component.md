@@ -35,3 +35,12 @@ out/c.js是组件打包生成的js存放路径，也是相对路径。
 - 组件的js需要提供一个this.component_init = function(){}的方法，用于组件挂载到页面之后回调，初始化方法请写在这里。
 
 - 挂载组件的时候使用component_XXX.build_component('demo_1'); demo_1改成要挂载到的元素的id
+
+**如何使用打包的组件**
+```html
+<script src="./out/c/main.js"></script>
+<script>
+    component_beta.build_component('demo_1');
+</script>
+```
+引入js，调用build_component方法。component_beta改成component_你的组件名字，demo_1改成组件要放置的元素id，就如此简单。
