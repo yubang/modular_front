@@ -15,6 +15,7 @@ from lib.merge_file import get_after_merge_file_str
 from lib.static_minify import minify_file
 from lib import tools
 from lib.log_lib import log
+import traceback
 import os
 import yaml
 import copy
@@ -125,7 +126,7 @@ def minify_file_in_script(data, offset_path='.'):
         with open(now_path, read_type) as fp:
             fp_data = fp.read()
             if fp_type and fp_type in ['html', 'css', 'js']:
-                fp_data = minify_file(fp_data, fp_type)
+                fp_data = minify_file(fp_data, fp_type, data['encryption'], data['encryption'])
                 write_type = 'w'
             else:
                 write_type = 'wb'
@@ -142,7 +143,10 @@ class MyHandle(FileSystemEventHandler):
             log.info('监控到文件变化：%s' % event.src_path)
             argv = copy.deepcopy(self.argv)
             argv['change_file_path'] = event.src_path
-            init(argv)
+            try:
+                init(argv)
+            except:
+                traceback.print_exc()
 
     def on_created(self, event):
         if not event.is_directory and os.path.exists(event.src_path) and os.path.getsize(event.src_path):

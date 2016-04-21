@@ -1,5 +1,6 @@
 # 压缩文件例子
 
 rule: minify
-source_path: ./demo/in/max
-target_path: ./demo/out/min
+source_path: demo/in/max
+target_path: demo/out/min
+encryption: True
