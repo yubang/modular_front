@@ -9,10 +9,19 @@
 
 
 from script import v1
+from config import project
 
 
 def test():
-    v1.init()
+
+    # project_path = input("请输入项目路径：")
+    # if not os.path.exists(project_path):
+    #     exit("项目路径不存在")
+    #
+    # v1.init({"project_path": project_path})
+
+    v1.start_monitor({"project_path": project.project_path, 'watch_path': project.watch_path})
+
     print("ok")
 
 

@@ -1,0 +1,5 @@
+# 这是一个打包组件的规则文件
+
+rule: make_component
+source_path: cc
+target_path: out/c.js

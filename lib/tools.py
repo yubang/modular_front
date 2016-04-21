@@ -6,12 +6,15 @@
 """
 
 
+from lib.log_lib import log
 import os
 
 
 def output_file(file_path, fp_data, write_type='w'):
     if not os.path.exists(os.path.dirname(file_path)):
         os.makedirs(os.path.dirname(file_path))
+
+    log.info('写入文件：%s' % file_path)
     with open(file_path, write_type) as fp:
         fp.write(fp_data)
 
