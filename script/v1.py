@@ -79,7 +79,7 @@ def handle_rule(data, argv):
         print('合并文件完成 ' + time.strftime('%H:%M:%S'))
     elif data['rule'] == 'minify':
         log.info('触发压缩文件，文件源：%s' % changle_file_path)
-        minify_file_in_script(data)
+        minify_file_in_script(data, argv=argv)
         print('压缩文件完成 ' + time.strftime('%H:%M:%S'))
 
 
@@ -108,7 +108,7 @@ def merge_file(data):
     tools.output_file(data['target_path'], text)
 
 
-def minify_file_in_script(data, offset_path='.'):
+def minify_file_in_script(data, offset_path='.', argv=None):
     """
     压缩文件
     :param data: 规则字典
@@ -119,8 +119,13 @@ def minify_file_in_script(data, offset_path='.'):
     if os.path.isdir(now_path):
         fps = os.listdir(now_path)
         for fp in fps:
-            minify_file_in_script(data, offset_path + '/' + fp)
+            minify_file_in_script(data, offset_path + '/' + fp, argv=argv)
     else:
+
+        # 判断是不是修改了这个文件
+        if os.path.realpath(now_path) != os.path.realpath(argv['change_file_path']):
+            return
+
         fp_type = tools.get_file_type(now_path)
         if fp_type and fp_type in ['html', 'css', 'js']:
             read_type = 'r'
