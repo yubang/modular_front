@@ -100,7 +100,7 @@ def merge_file(data):
     :return:
     """
     text = get_after_merge_file_str(data['source_path'])
-    text = minify_file(text, data['minify'])
+    text = minify_file(text, data['minify'], data['encryption'], data['encryption'])
     tools.output_file(data['target_path'], text)
 
 

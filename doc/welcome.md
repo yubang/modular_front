@@ -35,6 +35,6 @@
 使用文档：
 - [安装工具](https://github.com/yubang/modular_front/blob/master/doc/install.md "安装工具")
 - [组件打包](https://github.com/yubang/modular_front/blob/master/doc/component.md "组件打包")
-- 合并静态资源
+- [合并静态资源](https://github.com/yubang/modular_front/blob/master/doc/merge.md "合并静态资源")
 - [压缩静态资源](https://github.com/yubang/modular_front/blob/master/doc/minify.md "压缩静态资源")
 

@@ -6,3 +6,6 @@ target_path: ./demo/out/m/main.js
 
 # 压缩方式（html, css， js）
 minify: js
+
+# 是否混淆js
+encryption: True
