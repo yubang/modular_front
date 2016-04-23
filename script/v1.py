@@ -10,16 +10,12 @@
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from lib.make_component import get_component_js_str
-from lib.merge_file import get_after_merge_file_str
-from lib.static_minify import minify_file
-from lib import tools
 from lib.log_lib import log
-from lib import css_precompiled as css_precompiled_lib
+from lib import tools, dao_lib
+import copy
 import traceback
 import os
 import yaml
-import copy
 import time
 
 
@@ -72,155 +68,39 @@ def handle_rule(data, argv):
 
     if data['rule'] == 'make_component':
         log.info('触发制作组件，文件源：%s' % changle_file_path)
-        make_component(data)
+        dao_lib.make_component(data)
         print('制作组件完成 ' + time.strftime('%H:%M:%S'))
     elif data['rule'] == 'merge':
         log.info('触发合并文件，文件源：%s' % changle_file_path)
-        merge_file(data)
+        dao_lib.merge_file(data)
         print('合并文件完成 ' + time.strftime('%H:%M:%S'))
     elif data['rule'] == 'minify':
         log.info('触发压缩文件，文件源：%s' % changle_file_path)
-        minify_file_in_script(data, argv=argv)
+        dao_lib.minify_file_in_script(data, argv=argv)
         print('压缩文件完成 ' + time.strftime('%H:%M:%S'))
     elif data['rule'] == 'css_precompiled':
         log.info('触发预编译css文件，文件源：%s' % changle_file_path)
-        css_precompiled(data, argv=argv)
+        dao_lib.css_precompiled(data, argv=argv)
         print('预编译css文件完成 ' + time.strftime('%H:%M:%S'))
     elif data['rule'] == 'css_precompiled_and_merge':
         log.info('触发预编译css文件，文件源：%s' % changle_file_path)
         # 获取合并后的css
         if data['compiled_first']:
             # 先编译再合并
-            d = css_precompiled_get_str(data)
+            d = dao_lib.css_precompiled_get_str(data)
         else:
-            d = get_after_merge_file_str(data['source_path'], file_type=r'\.[(css)(scss)(less)(styl)]$')
+            d = dao_lib.get_after_merge_file_str(data['source_path'], file_type='[scss|less]$')
             if data['compiled_type'] == 'scss':
-                d = css_precompiled_lib.handle_scss(d)
+                d = dao_lib.css_precompiled_lib.handle_scss(d)
             elif data['compiled_type'] == 'less':
-                d = css_precompiled_lib.handle_less(d)
-            else:
-                d = css_precompiled_lib.handle_stylus(d)
+                d = dao_lib.css_precompiled_lib.handle_less(d)
 
         tools.output_file(data['target_path'], d)
         print('预编译css文件（并且合并成一个css）完成 ' + time.strftime('%H:%M:%S'))
-
-
-def css_precompiled_get_str(data, offset_path='.'):
-    """
-    预编译css
-    :param data: 规则字典
-    :param argv: 输入变量
-    :return:
-    """
-    css_str = ''
-    now_path = data['source_path'] + '/' + offset_path
-    if os.path.isdir(now_path):
-        fps = os.listdir(now_path)
-        for fp in fps:
-            css_str += css_precompiled_get_str(data, '/'.join([offset_path, fp]))
-    else:
-        with open(now_path, 'r') as fp:
-            file_type = tools.get_file_type(now_path)
-            if file_type not in ['styl', 'less', 'scss', 'css']:
-                return
-            if file_type == 'scss':
-                fp_data = css_precompiled_lib.handle_scss(fp.read())
-            elif file_type == 'less':
-                fp_data = css_precompiled_lib.handle_less(fp.read())
-            else:
-                fp_data = fp.read()
-            css_str += fp_data
-    return css_str + '\n'
-
-
-def css_precompiled(data, offset_path='.', argv=None):
-    """
-    预编译css
-    :param data: 规则字典
-    :param argv: 输入变量
-    :return:
-    """
-    now_path = data['source_path'] + '/' + offset_path
-    if os.path.isdir(now_path):
-        fps = os.listdir(now_path)
-        for fp in fps:
-            css_precompiled(data, '/'.join([offset_path, fp]), argv)
-    else:
-
-        # 判断是不是修改了这个文件
-        if os.path.realpath(now_path) != os.path.realpath(argv['change_file_path']):
-            return
-
-        with open(now_path, 'r') as fp:
-            file_type = tools.get_file_type(now_path)
-            if file_type not in ['styl', 'less', 'scss', 'css', 'sass']:
-                return
-            if file_type == 'scss' or file_type == 'sass':
-                fp_data = css_precompiled_lib.handle_scss(fp.read())
-            elif file_type == 'less':
-                fp_data = css_precompiled_lib.handle_less(fp.read())
-            else:
-                fp_data = fp.read()
-            tools.output_file(data['target_path'] + '/' + offset_path + '.css', fp_data)
-
-
-def make_component(data):
-    """
-    制作组件
-    :param data: 规则字典
-    :return:
-    """
-    js, code = get_component_js_str(data['source_path'])
-
-    if code == 0:
-        tools.output_file(data['target_path'], js)
-    elif code == -1:
-        log.info('由于没有发现组件配置文件，所以忽略本次制作')
-
-
-def merge_file(data):
-    """
-    合并文件
-    :param data: 规则字典
-    :return:
-    """
-    text = get_after_merge_file_str(data['source_path'])
-    text = minify_file(text, data['minify'], data['encryption'], data['encryption'])
-    tools.output_file(data['target_path'], text)
-
-
-def minify_file_in_script(data, offset_path='.', argv=None):
-    """
-    压缩文件
-    :param data: 规则字典
-    :param path: 当前路径
-    :return:
-    """
-    now_path = data['source_path'] + '/' + offset_path
-    if os.path.isdir(now_path):
-        fps = os.listdir(now_path)
-        for fp in fps:
-            minify_file_in_script(data, offset_path + '/' + fp, argv=argv)
-    else:
-
-        # 判断是不是修改了这个文件
-        if os.path.realpath(now_path) != os.path.realpath(argv['change_file_path']):
-            return
-
-        fp_type = tools.get_file_type(now_path)
-        if fp_type and fp_type in ['html', 'css', 'js']:
-            read_type = 'r'
-        else:
-            read_type = 'rb'
-
-        with open(now_path, read_type) as fp:
-            fp_data = fp.read()
-            if fp_type and fp_type in ['html', 'css', 'js']:
-                fp_data = minify_file(fp_data, fp_type, data['encryption'], data['encryption'])
-                write_type = 'w'
-            else:
-                write_type = 'wb'
-            tools.output_file(data['target_path'] + '/' + offset_path, fp_data, write_type)
+    elif data['rule'] == 'render_html':
+        log.info('触发预编译html文件，文件源：%s' % changle_file_path)
+        dao_lib.handle_render_html(data, argv=argv)
+        print('预编译html文件完成 ' + time.strftime('%H:%M:%S'))
 
 
 class MyHandle(FileSystemEventHandler):
@@ -242,7 +122,8 @@ class MyHandle(FileSystemEventHandler):
             # 只处理已知的几种文件
             know_files = [
                 'html', 'vue', 'txt', 'js', 'css',
-                'jpg', 'png', 'less', 'scss', 'sass'
+                'jpg', 'png', 'less', 'scss', 'sass',
+                'htm'
             ]
             if tools.get_file_type(event.src_path) not in know_files:
                 return

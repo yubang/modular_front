@@ -1,0 +1,5 @@
+# 渲染html
+
+rule: render_html
+source_path: demo/html
+target_path: demo/

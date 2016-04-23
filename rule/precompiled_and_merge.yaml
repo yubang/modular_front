@@ -8,4 +8,4 @@ target_path: demo/pre/out2/1.css
 compiled_type: scss
 
 # 是否先编译再合并
-compiled_first: True
+compiled_first: False
