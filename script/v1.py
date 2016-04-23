@@ -117,7 +117,7 @@ def css_precompiled_get_str(data, offset_path='.'):
     if os.path.isdir(now_path):
         fps = os.listdir(now_path)
         for fp in fps:
-            css_str += css_precompiled(data, '/'.join([offset_path, fp]), argv)
+            css_str += css_precompiled_get_str(data, '/'.join([offset_path, fp]))
     else:
         with open(now_path, 'r') as fp:
             file_type = tools.get_file_type(now_path)
@@ -157,8 +157,6 @@ def css_precompiled(data, offset_path='.', argv=None):
                 return
             if file_type == 'scss' or file_type == 'sass':
                 fp_data = css_precompiled_lib.handle_scss(fp.read())
-            elif file_type == 'styl':
-                fp_data = css_precompiled_lib.handle_stylus(fp.read())
             elif file_type == 'less':
                 fp_data = css_precompiled_lib.handle_less(fp.read())
             else:

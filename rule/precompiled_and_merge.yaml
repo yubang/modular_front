@@ -1,0 +1,11 @@
+# 编译并合并css
+
+rule: css_precompiled_and_merge
+source_path: demo/pre/in2
+target_path: demo/pre/out2/1.css
+
+# 编译方式（scss或则less）
+compiled_type: scss
+
+# 是否先编译再合并
+compiled_first: True
