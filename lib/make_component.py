@@ -10,7 +10,7 @@
 
 from lib.merge_file import get_after_merge_file_str
 from lib.all_to_js import build_js_data
-from lib.static_minify import handle_javascript
+from lib.static_minify import handle_javascript, handle_js_anonymous_function
 import yaml
 import os
 
@@ -51,4 +51,4 @@ def get_component_js_str(dir_path):
     """ % (component_config['name'], css_js_str, html_js_str, js, component_config['name'], component_config['name'])
     about_str = '// 该组件由modular_front打包生成，具体请查看：https://github.com/yubang/modular_front\n'
 
-    return about_str + handle_javascript(component_js), 0
+    return about_str + handle_js_anonymous_function(handle_javascript(component_js)), 0

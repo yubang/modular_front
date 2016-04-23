@@ -1,0 +1,5 @@
+# 预编译css
+
+rule: css_precompiled
+source_path: demo/pre/in
+target_path: demo/pre/out

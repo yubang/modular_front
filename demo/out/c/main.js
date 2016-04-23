@@ -1,2 +1,3 @@
 // 该组件由modular_front打包生成，具体请查看：https://github.com/yubang/modular_front
-var a=function(){var a="<style>a{color:green}a{font:15px;color:green}</style>";var b="<div><a id=ccc href=123>测 试</a><p>对吧</p></div>";function c(){document.getElementById('ccc').onclick=d;document.getElementById('ccc').innerHTML='vvv11111';}function d(){alert(123);}this.component_init=c;this.build_component=function(d){document.getElementById(d).innerHTML=a+' '+b;c();};return this;};this.component_beta=a();
+//本文件使用https://github.com/yubang/modular_front压缩
+(function(){var a=function(){var a="<style>a{color:green}a{font:15px;color:green}</style>";var b="<div><a id=ccc href=123>测 ff 试</a><p>对吧</p></div>";function c(){document.getElementById('ccc').onclick=d;document.getElementById('ccc').innerHTML='vvv11111';}function d(){alert(123);}this.component_init=c;this.build_component=function(d){document.getElementById(d).innerHTML=a+' '+b;c();};return this;};this.component_beta=a(); return this;})()

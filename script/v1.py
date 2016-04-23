@@ -15,6 +15,7 @@ from lib.merge_file import get_after_merge_file_str
 from lib.static_minify import minify_file
 from lib import tools
 from lib.log_lib import log
+from lib import css_precompiled as css_precompiled_lib
 import traceback
 import os
 import yaml
@@ -81,6 +82,88 @@ def handle_rule(data, argv):
         log.info('触发压缩文件，文件源：%s' % changle_file_path)
         minify_file_in_script(data, argv=argv)
         print('压缩文件完成 ' + time.strftime('%H:%M:%S'))
+    elif data['rule'] == 'css_precompiled':
+        log.info('触发预编译css文件，文件源：%s' % changle_file_path)
+        css_precompiled(data, argv=argv)
+        print('预编译css文件完成 ' + time.strftime('%H:%M:%S'))
+    elif data['rule'] == 'css_precompiled_and_merge':
+        log.info('触发预编译css文件，文件源：%s' % changle_file_path)
+        # 获取合并后的css
+        if data['compiled_first']:
+            # 先编译再合并
+            d = css_precompiled_get_str(data)
+        else:
+            d = get_after_merge_file_str(data['source_path'], file_type=r'\.[(css)(scss)(less)(styl)]$')
+            if data['compiled_type'] == 'scss':
+                d = css_precompiled_lib.handle_scss(d)
+            elif data['compiled_type'] == 'less':
+                d = css_precompiled_lib.handle_less(d)
+            else:
+                d = css_precompiled_lib.handle_stylus(d)
+
+        tools.output_file(data['target_path'], d)
+        print('预编译css文件（并且合并成一个css）完成 ' + time.strftime('%H:%M:%S'))
+
+
+def css_precompiled_get_str(data, offset_path='.'):
+    """
+    预编译css
+    :param data: 规则字典
+    :param argv: 输入变量
+    :return:
+    """
+    css_str = ''
+    now_path = data['source_path'] + '/' + offset_path
+    if os.path.isdir(now_path):
+        fps = os.listdir(now_path)
+        for fp in fps:
+            css_str += css_precompiled(data, '/'.join([offset_path, fp]), argv)
+    else:
+        with open(now_path, 'r') as fp:
+            file_type = tools.get_file_type(now_path)
+            if file_type not in ['styl', 'less', 'scss', 'css']:
+                return
+            if file_type == 'scss':
+                fp_data = css_precompiled_lib.handle_scss(fp.read())
+            elif file_type == 'less':
+                fp_data = css_precompiled_lib.handle_less(fp.read())
+            else:
+                fp_data = fp.read()
+            css_str += fp_data
+    return css_str + '\n'
+
+
+def css_precompiled(data, offset_path='.', argv=None):
+    """
+    预编译css
+    :param data: 规则字典
+    :param argv: 输入变量
+    :return:
+    """
+    now_path = data['source_path'] + '/' + offset_path
+    if os.path.isdir(now_path):
+        fps = os.listdir(now_path)
+        for fp in fps:
+            css_precompiled(data, '/'.join([offset_path, fp]), argv)
+    else:
+
+        # 判断是不是修改了这个文件
+        if os.path.realpath(now_path) != os.path.realpath(argv['change_file_path']):
+            return
+
+        with open(now_path, 'r') as fp:
+            file_type = tools.get_file_type(now_path)
+            if file_type not in ['styl', 'less', 'scss', 'css', 'sass']:
+                return
+            if file_type == 'scss' or file_type == 'sass':
+                fp_data = css_precompiled_lib.handle_scss(fp.read())
+            elif file_type == 'styl':
+                fp_data = css_precompiled_lib.handle_stylus(fp.read())
+            elif file_type == 'less':
+                fp_data = css_precompiled_lib.handle_less(fp.read())
+            else:
+                fp_data = fp.read()
+            tools.output_file(data['target_path'] + '/' + offset_path + '.css', fp_data)
 
 
 def make_component(data):
@@ -157,6 +240,15 @@ class MyHandle(FileSystemEventHandler):
             log.info('监控到文件变化：%s' % event.src_path)
             argv = copy.deepcopy(self.argv)
             argv['change_file_path'] = event.src_path
+
+            # 只处理已知的几种文件
+            know_files = [
+                'html', 'vue', 'txt', 'js', 'css',
+                'jpg', 'png', 'less', 'scss', 'sass'
+            ]
+            if tools.get_file_type(event.src_path) not in know_files:
+                return
+
             try:
                 init(argv)
             except:

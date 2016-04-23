@@ -10,8 +10,6 @@
 from slimit import minify
 import cssmin
 import htmlmin
-import time
-import hashlib
 
 
 def handle_html(html_data):
@@ -71,9 +69,6 @@ def handle_js_anonymous_function(js_data):
     :param js_data: js字符串
     :return:
     """
-
-    function_name = hashlib.md5(str(time.time()).encode("UTF-8")).hexdigest()
-
-    code = """function tools_anonymous_%s(){%s return this;}tools_anonymous_%s();""" % (function_name, js_data, function_name)
+    code = """(function(){%s return this;})()""" % js_data
     code = code.strip()
     return "//本文件使用https://github.com/yubang/modular_front压缩\n"+code
