@@ -39,3 +39,4 @@
 - [压缩静态资源](https://github.com/yubang/modular_front/blob/master/doc/minify.md "压缩静态资源")
 - [css预编译](https://github.com/yubang/modular_front/blob/master/doc/precompiled.md "css预编译")
 - [css预编译与压缩](https://github.com/yubang/modular_front/blob/master/doc/precompiled_and_merge.md "css预编译与压缩")
+- [html预编译](https://github.com/yubang/modular_front/blob/master/doc/render_html.md "html预编译")
