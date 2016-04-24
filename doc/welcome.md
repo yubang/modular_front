@@ -20,7 +20,8 @@
 - 打包组件
 - 合并html，css，js文件
 - 压缩混淆js文件
-- 简单html生成
+- 简单html生成（静态使用hash作为版本发布，分离写在html的css和js）
+- 预编译scss，less
 
 **为什么前端需要模块化？**
 
