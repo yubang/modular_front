@@ -51,7 +51,8 @@ def handle_rule_data(data, argv):
 
     if 'hash_static_path' in argv:
         data['hash_static_path'] = argv['project_path'] + '/' + data['hash_static_path']
-
+    if 'tools_obtain_static_path' in argv:
+        data['tools_obtain_static_path'] = argv['project_path'] + '/' + data['tools_obtain_static_path']
     return data
 
 

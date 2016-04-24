@@ -10,7 +10,7 @@ html预处理
 
 from bs4 import BeautifulSoup
 from config import tip
-from lib.static_minify import handle_html
+from lib.static_minify import handle_html, handle_javascript
 from lib import tools
 import os
 import hashlib
@@ -149,6 +149,77 @@ def handle_html_code(html_str, file_path):
     return str(soup)
 
 
+def separate_style(html_str, data):
+    """
+    分离css
+    :param html_str: html代码
+    :return:
+    """
+    css_index = 0
+    css_data = ''
+    soup = BeautifulSoup(html_str, "html.parser")
+
+    styles = soup.find_all("style")
+    for obj in styles:
+        css_data += ('\n' + obj.string)
+
+    objs = soup.find_all(True)
+    for index, _ in enumerate(objs):
+        obj = objs[index]
+        style_text = obj.get('style', None)
+        if style_text:
+            css_data += ('\n' + ".modular_front_css_%d{%s}" % (css_index, style_text))
+            if 'class' not in obj.attrs:
+                obj.attrs['class'] = []
+            obj.attrs['class'].append(("modular_front_css_%d" % css_index))
+            del obj['style']
+            css_index += 1
+
+    # 写入分离出的css文件
+    version = hashlib.md5(css_data.encode("UTF-8")).hexdigest()
+    file_path = data['tools_obtain_static_path'] + '/' + str_to_file_path(version, 8) + '.min.css'
+
+    tools.output_file(file_path, css_data)
+
+    link_str = '<link rel="stylesheet" href="%s">' % (data['tools_obtain_static_path_prefix'] + '/' + str_to_file_path(version, 8) + '.min.css')
+    soup.find('head').append(BeautifulSoup(link_str, "html.parser"))
+
+    return str(soup)
+
+
+def separate_javascript(html_str, data):
+    """
+    分离js
+    :param html_str: html代码
+    :return:
+    """
+    js_data = ''
+    soup = BeautifulSoup(html_str, "html.parser")
+
+    scripts = soup.find_all("script")
+    for obj in scripts:
+        if obj.string and obj.string.strip():
+            js_data += ('\n' + obj.string)
+            obj.string = ''
+
+    if not js_data:
+        return html_str
+
+    # 压缩js
+    js_data = handle_javascript(js_data, False, False)
+
+    # 写入分离出的js文件
+    version = hashlib.md5(js_data.encode("UTF-8")).hexdigest()
+    file_path = data['tools_obtain_static_path'] + '/' + str_to_file_path(version, 8) + '.min.js'
+
+    tools.output_file(file_path, js_data)
+
+    link_str = '<script src="%s"></script>' % (data['tools_obtain_static_path_prefix'] + '/' + str_to_file_path(version, 8) + '.min.js')
+    soup.find('body').append(BeautifulSoup(link_str, "html.parser"))
+
+    return str(soup)
+
+
 def build_html_use_template(html_str, file_path, data):
     """
     生成线上html代码
@@ -164,6 +235,10 @@ def build_html_use_template(html_str, file_path, data):
 
     # hash静态资源文件
     html_str = hash_css_and_js_version(html_str, file_path, data)
+
+    # 分离静态资源
+    html_str = separate_style(html_str, data)
+    html_str = separate_javascript(html_str, data)
 
     # 压缩html
     html_str = handle_html(html_str)
