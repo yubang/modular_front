@@ -14,7 +14,7 @@ from lib.static_minify import minify_file
 from lib import tools
 from lib.log_lib import log
 from lib import css_precompiled as css_precompiled_lib
-from lib.render_html import render_html_use_template
+from lib.render_html import render_html_use_template, build_html_use_template
 import os
 
 
@@ -156,3 +156,29 @@ def handle_render_html(data, offset_path='.', argv=None):
         with open(now_path, 'r') as fp:
             html = render_html_use_template(fp.read(), now_path)
             tools.output_file(data['target_path'] + '/' + offset_path, html)
+
+
+def build_html(data, offset_path='.', argv=None):
+    """
+    生成线上html
+    :return:
+    """
+    now_path = data['source_path'] + '/' + offset_path
+    if os.path.isdir(now_path):
+        fps = os.listdir(now_path)
+        for fp in fps:
+            build_html(data, '/'.join([offset_path, fp]), argv)
+    else:
+
+        # 判断是不是.html文件
+        if not now_path.endswith('.html'):
+            return
+
+        # 编译html文件
+        print("编译html文件：%s" % now_path)
+        log.info("编译html文件：%s" % now_path)
+
+        with open(now_path, 'r') as fp:
+            html = build_html_use_template(fp.read(), now_path, data)
+            tools.output_file(data['target_path'] + '/' + offset_path, html)
+

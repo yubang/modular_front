@@ -48,6 +48,10 @@ def handle_rule_data(data, argv):
     """
     data['source_path'] = argv['project_path'] + '/' + data['source_path']
     data['target_path'] = argv['project_path'] + '/' + data['target_path']
+
+    if 'hash_static_path' in argv:
+        data['hash_static_path'] = argv['project_path'] + '/' + data['hash_static_path']
+
     return data
 
 
@@ -160,3 +164,31 @@ def start_monitor(argv):
     input("按回车自动退出\n")
     log.info('退出前端模块化小工具')
     exit(0)
+
+
+def handle_html_build_in_release(data, argv):
+    """
+    编译成线上运行所需要的html
+    :return:
+    """
+    # 判断是不是编译html指令
+    if data['rule'] != 'render_html':
+        return
+
+    dao_lib.build_html(data, argv=argv)
+
+
+def read_all_rule_in_build_html(rule_dir, argv):
+    """
+    读取所有的规则文件
+    :param rule_dir: 规则文件目录
+    :param argv: 启动参数
+    :return:
+    """
+    if os.path.isdir(rule_dir):
+        dirs = os.listdir(rule_dir)
+        for obj in dirs:
+            read_all_rule_in_build_html(rule_dir + '/' + obj, argv)
+    else:
+        with open(rule_dir, 'r') as fp:
+            handle_html_build_in_release(yaml.load(fp.read()), argv)

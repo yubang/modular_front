@@ -3,3 +3,14 @@
 rule: render_html
 source_path: demo/html
 target_path: demo/
+
+
+# 提取的静态资源文件存放路径
+tools_obtain_static_path: demo/obtain
+
+
+# hash掉的静态文件存放路径
+hash_static_path: demo/hash
+
+# hash掉的静态文件存放路径前缀
+hash_static_path_prefix: /demo/hash
