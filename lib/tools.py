@@ -30,3 +30,22 @@ def get_file_type(file_path):
         return None
     else:
         return t[-1:][0]
+
+
+def get_all_file_path_in_dir(dir_path):
+    """
+    获取目录下所有文件名字
+    :param dir_path:
+    :return:
+    """
+    fps = {}
+
+    if os.path.isdir(dir_path):
+        objs = os.listdir(dir_path)
+        for obj in objs:
+            d = get_all_file_path_in_dir(dir_path + '/' + obj)
+            fps.update(d)
+    else:
+        fps[os.path.realpath(dir_path)] = ''
+
+    return fps

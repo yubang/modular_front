@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 from config import tip
 from lib.static_minify import handle_html, handle_javascript
 from lib import tools
+from lib import make_component
 import os
 import hashlib
 
@@ -49,6 +50,13 @@ def get_the_file_all_use_file(input_file_path, output_file_path, project_path):
                 use_files[import_path] = ''
                 d = get_the_file_all_use_file(import_path, output_file_path, project_path)
                 use_files.update(d)
+        # 拉取组件依赖文件
+        objs = soup.find_all('assembly')
+        for obj in objs:
+            if 'href' in obj.attrs:
+                d = tools.get_all_file_path_in_dir(get_real_static_path(obj['href'], project_path, output_path))
+                use_files.update(d)
+
     return use_files
 
 
@@ -112,6 +120,9 @@ def render_html_use_template(html_str, output_file_path, project_path, input_fil
 
     html_str = handle_html_code(html_str, input_path, project_path)
     html_str = handle_css_and_js_version(html_str, output_path, project_path)
+
+    # 编译组件
+    html_str = compile_assembly(html_str, project_path, input_path)
 
     # 删除重复的css和js
     html_str = remove_repeat_link_and_script(html_str)
@@ -303,6 +314,9 @@ def build_html_use_template(html_str, input_path, project_path, file_path, data)
     # 编译代码
     html_str = handle_html_code(html_str, input_path, project_path)
 
+    # 编译组件
+    html_str = compile_assembly(html_str, project_path, input_path)
+
     # hash静态资源文件
     html_str = hash_css_and_js_version(html_str, file_path, data, project_path)
 
@@ -348,4 +362,44 @@ def remove_repeat_link_and_script(html_str):
                 scripts[index].decompose()
             else:
                 labels[obj['src']] = ''
+    return str(soup)
+
+
+def compile_assembly(html_str, project_path, input_path):
+    """
+    编译组件
+    :param html_str:
+    :return:
+    """
+
+    js_data = ""
+    assemblys_name = {}
+
+    with open('template/assembly/assembly.html', 'r') as fp:
+        assembly_temp_html = fp.read()
+
+    soup = BeautifulSoup(html_str, "html.parser")
+
+    assemblys = soup.find_all("assembly")
+    for index, assembly in enumerate(assemblys):
+        if 'href' not in assembly.attrs or 'for' not in assembly.attrs :
+            continue
+        dir_path = get_real_static_path(assembly['href'], project_path, input_path)
+        # 判断是否要重新编译
+        if dir_path not in assemblys_name:
+            d, name = make_component.get_component_js_str_and_name(dir_path)
+            assemblys_name[dir_path] = name
+            js_data += ('\n' + d)
+        # 替换组件标签
+        assemblys[index].replace_with(BeautifulSoup(assembly_temp_html, "html.parser"))
+        # 添加初始化函数
+        js_data += ('\n component_%s.build_component("%s");' % (assemblys_name[dir_path], assembly['for']))
+
+    if js_data:
+        js_data = '<script>%s</script>' % js_data
+        soup.find("body").append(BeautifulSoup(js_data, "html.parser"))
+        with open('template/assembly/assembly.css', 'r') as fp:
+            assembly_temp_css = fp.read()
+            assembly_temp_css = '<style>%s</style>' % assembly_temp_css
+            soup.find("head").append(BeautifulSoup(assembly_temp_css, "html.parser"))
     return str(soup)

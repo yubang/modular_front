@@ -52,3 +52,16 @@ def get_component_js_str(dir_path):
     """ % (component_config['name'], css_js_str, html_js_str, js, component_config['name'], component_config['name'])
     about_str = tip.js_tip
     return about_str + handle_js_anonymous_function(handle_javascript(component_js)), 0
+
+
+def get_component_js_str_and_name(dir_path):
+    """
+    获取打包好的组件js文件和组件名字
+    :param dir_path: 组件代码文件夹路径
+    :return: str, name
+    """
+    js_str, _ = get_component_js_str(dir_path)
+    with open(dir_path+'/c.yaml', 'r') as fp:
+        fp_data = fp.read()
+        component_config = yaml.load(fp_data)
+    return js_str, component_config['name']

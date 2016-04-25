@@ -4,7 +4,7 @@
  * 我就是喜欢造轮子，每天一轮子，生活更美好O(∩_∩)O
  * codeman 一楼：沙发，o(^▽^)o给邦神点赞
  */
- 
+
  function TheWheelsOfFrontEnd(){
         
         function pagingComponentLiLinkBind(domObj, html, hrefStr){

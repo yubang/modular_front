@@ -1,10 +1,10 @@
 function component_init(){
 
-document.getElementById('ccc').onclick=cli;
+//document.getElementById('ccc').onclick=cli;
 
 //测试
 
-    document.getElementById('ccc').innerHTML = 'vvv11111';
+    //document.getElementById('ccc').innerHTML = 'vvv11111';
 }
 
 
