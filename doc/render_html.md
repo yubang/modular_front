@@ -31,7 +31,9 @@ demo/html改成要压缩的文件所在文件夹路径（相对路径），这�
 
 *预编译的html会发生什么事情呢？*
 - 自动为引入的js和css打上版本号（只为本地引用打版本号，样式为?v=16位文件md5）
-- 支持import标签，引入href属性指定的文件，注意该路径是相对于import标签编写文件的路径。（例子 `<import href="1.htm" />`）
+- 支持import标签，引入href属性指定的文件，注意该路径是相对于import标签编写文件生成文件的路径。（例子 `<import href="1.htm" />`）
 - 压缩html文件
 - 支持分离写在html页面的js和css（标签上的style也会分离喔）
 - 支持引用的js和css文件名变成内容hash值（防止传统的更新文件采取覆盖旧文件，打版本号更新不一致问题，具体参考[这里](http://www.infoq.com/cn/articles/front-end-engineering-and-performance-optimization-part1 "这里")的基于hash更新原因）
+- 支持assembly标签，引入href属性指定的组件（组件文件夹路径），注意该路径是相对于assembly标签编写文件生成文件的路径。（例子 `<div id="gg"><assembly href="/demo/in/component" for="gg"/></div>`）
+- 注意如果引用路径以/开头，则为项目目录开始的相对路径
