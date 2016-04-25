@@ -16,6 +16,40 @@ import os
 import hashlib
 
 
+def get_the_file_all_use_file(input_file_path, output_file_path, project_path):
+    """
+    获取文件依赖的文件列表
+    :param input_file_path: 输入文件地址
+    :param output_file_path: 输出文件地址
+    :param project_path: 项目路径
+    :return:
+    """
+    if not os.path.exists(input_file_path):
+        return {}
+
+    use_files = {}
+    output_path = os.path.dirname(output_file_path)
+    with open(input_file_path, 'r') as fp:
+        soup = BeautifulSoup(fp.read(), "html.parser")
+        links = soup.find_all('link')
+        for obj in links:
+            if 'href' in obj.attrs:
+                use_files[get_real_static_path(obj['href'], project_path, output_path)] = ''
+        scripts = soup.find_all('script')
+        for obj in scripts:
+            if 'src' in obj.attrs:
+                use_files[get_real_static_path(obj['src'], project_path, output_path)] = ''
+        # 处理引入的html代码片段
+        imports = soup.find_all('import')
+        for obj in imports:
+            if 'href' in obj.attrs:
+                import_path = get_real_static_path(obj['href'], project_path, output_path)
+                use_files[import_path] = ''
+                get_the_file_all_use_file(import_path, output_file_path, project_path)
+
+    return use_files
+
+
 def handle_css_of_js_path(path):
     path = path.split("?")
     return path[0]
@@ -39,37 +73,64 @@ def str_to_file_path(string, char_num):
     return '/'.join(objs)
 
 
-def render_html_use_template(html_str, file_path):
+def get_real_static_path(static_href, project_path, output_path):
+    """
+    获取真实的静态文件路径
+    :param static_href: 静态资源链接
+    :param project_path: 项目路径
+    :param output_path: 输出的html文件夹路径
+    :return:
+    """
+
+    static_href = handle_css_of_js_path(static_href)
+
+    if static_href[0] == '/' and static_href[1] != '/':
+        # 绝对路径
+        return project_path + static_href
+    elif static_href[0] != '/':
+        # 相对路径
+        return output_path + '/' + static_href
+    else:
+        # cdn路径
+        return None
+
+
+def render_html_use_template(html_str, output_file_path, project_path, input_file_path):
     """
     渲染html代码
     :param html_str: html模板
+    :param output_file_path: 输出的html文件路径
+    :param project_path: 项目路径
     :return:
     """
 
     # 处理路径
-    file_path = os.path.dirname(file_path)
+    output_path = os.path.dirname(output_file_path)
+    input_path = os.path.dirname(input_file_path)
 
-    html_str = handle_html_code(html_str, file_path)
-    html_str = handle_css_and_js_version(html_str, file_path)
+    html_str = handle_html_code(html_str, input_path, project_path)
+    html_str = handle_css_and_js_version(html_str, output_path, project_path)
     html_str = handle_html(html_str)
     html_str = tip.html_tip + html_str
     return html_str
 
 
-def handle_css_and_js_version(html_str, file_path):
+def handle_css_and_js_version(html_str, file_path, project_path):
     """
     为js和css打上版本号
     :param html_str: html代码
+    :param project_path: 项目路径
     :return:
     """
     soup = BeautifulSoup(html_str, "html.parser")
     links = soup.find_all("link")
     for index, _ in enumerate(links):
-        if 'href' not in links[index]:
+        if 'href' not in links[index].attrs:
             continue
         link_path = handle_css_of_js_path(links[index]['href'])
-        path = file_path + '/' + link_path
-        if os.path.exists(path):
+        path = get_real_static_path(link_path, project_path, file_path)
+
+        if path and os.path.exists(path):
             with open(path, 'r') as fp:
                 version = hashlib.md5(fp.read().encode("UTF-8")).hexdigest()[8: -8]
                 links[index]['href'] = link_path + '?v=' + version
@@ -81,9 +142,9 @@ def handle_css_and_js_version(html_str, file_path):
         if not scripts[index].get('src', False):
             continue
         link_path = handle_css_of_js_path(scripts[index]['src'])
-        path = file_path + '/' + link_path
+        path = get_real_static_path(link_path, project_path, file_path)
 
-        if os.path.exists(path):
+        if path and os.path.exists(path):
             with open(path, 'r') as fp:
                 version = hashlib.md5(fp.read().encode("UTF-8")).hexdigest()[8: -8]
                 scripts[index]['src'] = link_path + '?v=' + version
@@ -91,7 +152,7 @@ def handle_css_and_js_version(html_str, file_path):
     return str(soup)
 
 
-def hash_css_and_js_version(html_str, file_path, data):
+def hash_css_and_js_version(html_str, file_path, data, project_path):
     """
     hash静态资源
     :param html_str: html代码
@@ -100,11 +161,11 @@ def hash_css_and_js_version(html_str, file_path, data):
     soup = BeautifulSoup(html_str, "html.parser")
     links = soup.find_all("link")
     for index, _ in enumerate(links):
-        if 'href' not in links[index]:
+        if 'href' not in links[index].attrs:
             continue
         link_path = handle_css_of_js_path(links[index]['href'])
-        path = file_path + '/' + link_path
-        if os.path.exists(path):
+        path = get_real_static_path(link_path, project_path, file_path)
+        if path and os.path.exists(path):
             with open(path, 'r') as fp:
                 version = hashlib.md5(fp.read().encode("UTF-8")).hexdigest()
                 static_path = data['hash_static_path'] + '/' + str_to_file_path(version, 8) + '.min.css'
@@ -118,9 +179,9 @@ def hash_css_and_js_version(html_str, file_path, data):
         if not scripts[index].get('src', False):
             continue
         link_path = handle_css_of_js_path(scripts[index]['src'])
-        path = file_path + '/' + link_path
+        path = get_real_static_path(link_path, project_path, file_path)
 
-        if os.path.exists(path):
+        if path and os.path.exists(path):
             with open(path, 'r') as fp:
                 version = hashlib.md5(fp.read().encode("UTF-8")).hexdigest()
                 static_path = data['hash_static_path'] + '/' + str_to_file_path(version, 8) + '.min.js'
@@ -130,7 +191,7 @@ def hash_css_and_js_version(html_str, file_path, data):
     return str(soup)
 
 
-def handle_html_code(html_str, file_path):
+def handle_html_code(html_str, file_path, project_path):
     """
     引入代码片段
     :param html_str: html代码
@@ -141,10 +202,10 @@ def handle_html_code(html_str, file_path):
     links = soup.find_all("import")
     for index, _ in enumerate(links):
         link_path = handle_css_of_js_path(links[index]['href'])
-        path = file_path + '/' + link_path
-        if os.path.exists(path):
+        path = get_real_static_path(link_path, project_path, file_path)
+        if path and os.path.exists(path):
             with open(path, 'r') as fp:
-                links[index].replace_with(BeautifulSoup(handle_html_code(fp.read(), os.path.dirname(path)), "html.parser"))
+                links[index].replace_with(BeautifulSoup(handle_html_code(fp.read(), os.path.dirname(path), project_path), "html.parser"))
 
     return str(soup)
 
@@ -220,21 +281,23 @@ def separate_javascript(html_str, data):
     return str(soup)
 
 
-def build_html_use_template(html_str, file_path, data):
+def build_html_use_template(html_str, input_path, project_path, file_path, data):
     """
     生成线上html代码
     :param html_str: html模板
+    :param project_path: 项目路径
     :return:
     """
 
     # 处理路径
     file_path = os.path.dirname(file_path)
+    input_path = os.path.dirname(input_path)
 
     # 编译代码
-    html_str = handle_html_code(html_str, file_path)
+    html_str = handle_html_code(html_str, input_path, project_path)
 
     # hash静态资源文件
-    html_str = hash_css_and_js_version(html_str, file_path, data)
+    html_str = hash_css_and_js_version(html_str, file_path, data, project_path)
 
     # 分离静态资源
     html_str = separate_style(html_str, data)

@@ -14,7 +14,7 @@ from lib.static_minify import minify_file
 from lib import tools
 from lib.log_lib import log
 from lib import css_precompiled as css_precompiled_lib
-from lib.render_html import render_html_use_template, build_html_use_template
+from lib.render_html import render_html_use_template, build_html_use_template, get_the_file_all_use_file
 import os
 
 
@@ -153,9 +153,15 @@ def handle_render_html(data, offset_path='.', argv=None):
         if not now_path.endswith('.html'):
             return
 
+        # 判断修改的文件是不是影响了编译
+        output_file = data['target_path'] + '/' + offset_path
+        d = get_the_file_all_use_file(now_path, output_file, argv['project_path'])
+        if argv['change_file_path'] not in d:
+            return
+
         with open(now_path, 'r') as fp:
-            html = render_html_use_template(fp.read(), now_path)
-            tools.output_file(data['target_path'] + '/' + offset_path, html)
+            html = render_html_use_template(fp.read(), output_file, argv['project_path'], now_path)
+            tools.output_file(output_file, html)
 
 
 def build_html(data, offset_path='.', argv=None):
@@ -179,6 +185,7 @@ def build_html(data, offset_path='.', argv=None):
         log.info("编译html文件：%s" % now_path)
 
         with open(now_path, 'r') as fp:
-            html = build_html_use_template(fp.read(), now_path, data)
-            tools.output_file(data['target_path'] + '/' + offset_path, html)
+            output_path = data['target_path'] + '/' + offset_path
+            html = build_html_use_template(fp.read(), output_path, argv['project_path'], now_path, data)
+            tools.output_file(output_path, html)
 

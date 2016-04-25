@@ -66,9 +66,9 @@ def handle_rule(data, argv):
 
     data = handle_rule_data(data, argv)
 
-    # 判断规则是不是需要执行
+    # 判断规则是不是需要执行，（编译html除外）
     changle_file_path = argv['change_file_path']
-    if not changle_file_path.startswith(os.path.realpath(data['source_path'])):
+    if data['rule'] != 'render_html' and not changle_file_path.startswith(os.path.realpath(data['source_path'])):
         return
 
     if data['rule'] == 'make_component':
