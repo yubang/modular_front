@@ -23,9 +23,10 @@ def test():
 
     argv = {"project_path": project.project_path, 'watch_path': project.watch_path}
 
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 3:
         if sys.argv[1] == 'build_html':
             print("编译html文件开始")
+            argv['version'] = sys.argv[2]
             v1.read_all_rule_in_build_html('./rule', argv)
             print("编译html文件结束")
         else:

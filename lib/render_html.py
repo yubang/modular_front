@@ -27,7 +27,9 @@ def get_the_file_all_use_file(input_file_path, output_file_path, project_path):
     if not os.path.exists(input_file_path):
         return {}
 
-    use_files = {}
+    input_file_path = os.path.realpath(input_file_path)
+
+    use_files = {input_file_path: ''}
     output_path = os.path.dirname(output_file_path)
     with open(input_file_path, 'r') as fp:
         soup = BeautifulSoup(fp.read(), "html.parser")
@@ -45,8 +47,8 @@ def get_the_file_all_use_file(input_file_path, output_file_path, project_path):
             if 'href' in obj.attrs:
                 import_path = get_real_static_path(obj['href'], project_path, output_path)
                 use_files[import_path] = ''
-                get_the_file_all_use_file(import_path, output_file_path, project_path)
-
+                d = get_the_file_all_use_file(import_path, output_file_path, project_path)
+                use_files.update(d)
     return use_files
 
 
@@ -86,10 +88,10 @@ def get_real_static_path(static_href, project_path, output_path):
 
     if static_href[0] == '/' and static_href[1] != '/':
         # 绝对路径
-        return project_path + static_href
+        return os.path.realpath(project_path + static_href)
     elif static_href[0] != '/':
         # 相对路径
-        return output_path + '/' + static_href
+        return os.path.realpath(output_path + '/' + static_href)
     else:
         # cdn路径
         return None
@@ -110,6 +112,10 @@ def render_html_use_template(html_str, output_file_path, project_path, input_fil
 
     html_str = handle_html_code(html_str, input_path, project_path)
     html_str = handle_css_and_js_version(html_str, output_path, project_path)
+
+    # 删除重复的css和js
+    html_str = remove_repeat_link_and_script(html_str)
+
     html_str = handle_html(html_str)
     html_str = tip.html_tip + html_str
     return html_str
@@ -124,6 +130,7 @@ def handle_css_and_js_version(html_str, file_path, project_path):
     """
     soup = BeautifulSoup(html_str, "html.parser")
     links = soup.find_all("link")
+
     for index, _ in enumerate(links):
         if 'href' not in links[index].attrs:
             continue
@@ -242,7 +249,7 @@ def separate_style(html_str, data):
 
     tools.output_file(file_path, css_data)
 
-    link_str = '<link rel="stylesheet" href="%s">' % (data['tools_obtain_static_path_prefix'] + '/' + str_to_file_path(version, 8) + '.min.css')
+    link_str = '<link rel="stylesheet" href="%s" />' % (data['tools_obtain_static_path_prefix'] + '/' + str_to_file_path(version, 8) + '.min.css')
     soup.find('head').append(BeautifulSoup(link_str, "html.parser"))
 
     return str(soup)
@@ -303,8 +310,42 @@ def build_html_use_template(html_str, input_path, project_path, file_path, data)
     html_str = separate_style(html_str, data)
     html_str = separate_javascript(html_str, data)
 
+    # 删除重复的css和js
+    html_str = remove_repeat_link_and_script(html_str)
+
     # 压缩html
     html_str = handle_html(html_str)
     # 为生成的代码打标示
     html_str = tip.html_tip + html_str
     return html_str
+
+
+def remove_repeat_link_and_script(html_str):
+    """
+    删除重复的link和script
+    :param html_str: html字符串
+    :return:
+    """
+    labels = {}
+    soup = BeautifulSoup(html_str, "html.parser")
+
+    links = soup.find_all('link')
+
+    for index, obj in enumerate(links):
+        if not obj.attrs:
+            links[index].decompose()
+            continue
+        if 'href' in obj.attrs:
+            if obj['href'] in labels:
+                links[index].decompose()
+            else:
+                labels[obj['href']] = ''
+    scripts = soup.find_all('script')
+
+    for index, obj in enumerate(scripts):
+        if 'src' in obj.attrs:
+            if obj['src'] in labels:
+                scripts[index].decompose()
+            else:
+                labels[obj['src']] = ''
+    return str(soup)

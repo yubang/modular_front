@@ -176,6 +176,12 @@ def handle_html_build_in_release(data, argv):
     if data['rule'] != 'render_html':
         return
 
+    # 根据版本号拼接目录路径
+    data['tools_obtain_static_path'] += ('/' + argv['version'])
+    data['tools_obtain_static_path_prefix'] += ('/' + argv['version'])
+    data['hash_static_path'] += ('/' + argv['version'])
+    data['hash_static_path_prefix'] += ('/' + argv['version'])
+
     dao_lib.build_html(data, argv=argv)
 
 

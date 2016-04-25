@@ -156,6 +156,7 @@ def handle_render_html(data, offset_path='.', argv=None):
         # 判断修改的文件是不是影响了编译
         output_file = data['target_path'] + '/' + offset_path
         d = get_the_file_all_use_file(now_path, output_file, argv['project_path'])
+
         if argv['change_file_path'] not in d:
             return
 
