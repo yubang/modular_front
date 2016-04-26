@@ -32,15 +32,15 @@ out/c.js是组件打包生成的js存放路径，也是相对路径。
 
 - 组件的js调用写了this之后也是不能直接调用了，因为防止组件之间代码冲突工具自动把函数包起来了，调用的时候需要用component_XXX.方法 这样子来调用。XXX是组件配置时候写的名字
 
-- 组件的js需要提供一个this.component_init = function(){}的方法，用于组件挂载到页面之后回调，初始化方法请写在这里。
+- 组件的js需要提供一个this.component_init = function(data, func){}的方法，用于组件挂载到页面之后回调，初始化方法请写在这里。
 
-- 挂载组件的时候使用component_XXX.build_component('demo_1'); demo_1改成要挂载到的元素的id
+- 挂载组件的时候使用component_XXX.build_component('demo_1', {}, function(){}); demo_1改成要挂载到的元素的id
 
 **如何使用打包的组件**
 ```html
 <script src="./out/c/main.js"></script>
 <script>
-    component_beta.build_component('demo_1');
+    component_beta.build_component('demo_1', {}, function(){});
 </script>
 ```
-引入js，调用build_component方法。component_beta改成component_你的组件名字，demo_1改成组件要放置的元素id，就如此简单。
+引入js，调用build_component方法。component_beta改成component_你的组件名字，demo_1改成组件要放置的元素id，第二个参数为一个自定义参数，第三个参数为回调函数，就如此简单。

@@ -41,9 +41,9 @@ def get_component_js_str(dir_path):
             %s
             %s
             %s
-            this.build_component = function(dom_id){
+            this.build_component = function(dom_id, data, func){
               document.getElementById(dom_id).innerHTML = tools_css + ' ' + tools_html;
-              component_init();
+              component_init(data, func);
             };
 
             return this;
